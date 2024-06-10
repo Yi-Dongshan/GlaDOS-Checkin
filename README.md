@@ -14,9 +14,6 @@ _✨ 基于 [Python](https://www.python.org/) 实现的[GLaDOS](https://github.c
   <a href="https://www.python.org/">
     <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
   </a>
-  <a href="">
-    <img src="https://img.shields.io/github/stars/" alt="stars">
-  </a>
 </p>
 
 ## 简单介绍一下GLaDOS

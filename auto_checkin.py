@@ -5,9 +5,10 @@ import time
 import requests
 import logging
 from datetime import timedelta, date
-from config import headers, EMAIL_CONFIG
+from config import headers, EMAIL_CONFIG, TELEGRAM_CONFIG, NOTIFY_CONFIG
 import zstandard as zstd
 from email_sender import send_email
+from telegram_sender import send_telegram
 
 # 保持原有的日志配置
 logging.basicConfig(
@@ -121,29 +122,49 @@ if __name__ == '__main__':
             f"⏳ 剩余会员：{leftdays} 天（到期时间：{exp_date}）"
         )
         
-        # 发送邮件通知
-        if send_email(
-            subject="GLaDOS 每日签到通知",
-            content=msg,
-            sender_email=EMAIL_CONFIG['sender_email'],
-            sender_password=EMAIL_CONFIG['sender_password'],
-            receiver_email=EMAIL_CONFIG['receiver_email']
-        ):
-            logging.info("邮件发送成功")
-        else:
-            logging.error("邮件发送失败")
+        # 发送通知
+        if NOTIFY_CONFIG.get('email', True):
+            if send_email(
+                subject="GLaDOS 每日签到通知",
+                content=msg,
+                sender_email=EMAIL_CONFIG['sender_email'],
+                sender_password=EMAIL_CONFIG['sender_password'],
+                receiver_email=EMAIL_CONFIG['receiver_email']
+            ):
+                logging.info("邮件发送成功")
+            else:
+                logging.error("邮件发送失败")
+        
+        if NOTIFY_CONFIG.get('telegram', False):
+            if send_telegram(
+                bot_token=TELEGRAM_CONFIG['bot_token'],
+                chat_id=TELEGRAM_CONFIG['chat_id'],
+                message=msg
+            ):
+                logging.info("Telegram 通知发送成功")
+            else:
+                logging.error("Telegram 通知发送失败")
             
         logging.info(msg)
         
     except Exception as e:
         error_msg = f"签到程序执行出错：{str(e)}"
         logging.error(error_msg)
+        
         # 发送错误通知
-        send_email(
-            subject="GLaDOS 签到失败通知",
-            content=error_msg,
-            sender_email=EMAIL_CONFIG['sender_email'],
-            sender_password=EMAIL_CONFIG['sender_password'],
-            receiver_email=EMAIL_CONFIG['receiver_email']
-        )
+        if NOTIFY_CONFIG.get('email', True):
+            send_email(
+                subject="GLaDOS 签到失败通知",
+                content=error_msg,
+                sender_email=EMAIL_CONFIG['sender_email'],
+                sender_password=EMAIL_CONFIG['sender_password'],
+                receiver_email=EMAIL_CONFIG['receiver_email']
+            )
+        
+        if NOTIFY_CONFIG.get('telegram', False):
+            send_telegram(
+                bot_token=TELEGRAM_CONFIG['bot_token'],
+                chat_id=TELEGRAM_CONFIG['chat_id'],
+                message=f"❌ {error_msg}"
+            )
 

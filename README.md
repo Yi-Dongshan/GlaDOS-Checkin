@@ -1,111 +1,176 @@
 
-# GLaDOS 自动签到⚡
+# GLaDOS 自动签到工具
 
-_✨ 基于 Python 实现的 GLaDOS 自动签到程序 ✨_
+一个基于 Python 实现的 GLaDOS 自动签到工具，支持邮件和 Telegram 通知。
 
-## 功能特点
+## 功能特性
 
-- 自动执行每日签到
-- 邮件通知签到结果
-- 详细的日志记录
-- 支持 Windows 计划任务和 Linux Cron 定时执行
+- ✨ 自动执行每日签到
+- 📧 支持邮件通知
+- 🤖 支持 Telegram 机器人通知
+- 📝 详细的日志记录
+- ⏰ 支持 Windows 计划任务和 Linux Cron 定时执行
 
-## 环境要求
+## 使用方法
 
-- Python 3.8+
-- 依赖包：见 requirements.txt
+### 1. 环境准备
 
-## 快速开始
-
-1. 克隆仓库：
+#### Windows
 ```bash
-git clone https://github.com/your-username/GlaDOS-Checkin.git
-cd GlaDOS-Checkin
-```
+# 克隆仓库
+git clone https://github.com/Yi-Dongshan/GlaDOS-Checkin.git
 
-2. 安装依赖：
-```bash
+# 安装依赖
 pip install -r requirements.txt
 ```
 
-3. 配置文件：
-   - 复制 `config.example.py` 为 `config.py`
-   - 在 `config.py` 中填入你的 GLaDOS 账号 headers 信息
-   - 配置邮箱信息（推荐使用 QQ 邮箱）
+#### Linux
+```bash
+# 安装 Python3 和 pip
+apt update
+apt install -y python3 python3-pip git
 
-## 部署说明
+# 克隆仓库
+git clone https://github.com/Yi-Dongshan/GlaDOS-Checkin.git
 
-### Windows 系统
+# 创建 Python 虚拟环境
+cd GlaDOS-Checkin
+python3 -m venv venv
+source venv/bin/activate
 
+# 安装依赖
+pip install -r requirements.txt
+```
+
+### 2. 配置文件
+1. 复制配置文件模板：
+   - 将 `config.example.py` 复制为 `config.py`
+   - 修改配置文件中的相关信息
+
+2. 配置说明：
+   ```python
+   # GLaDOS Headers配置
+   headers = {
+       "cookie": "your_cookie_here",
+       "user-agent": "your_user_agent_here",
+   }
+
+   # 邮箱配置（使用QQ邮箱）
+   EMAIL_CONFIG = {
+       'sender_email': 'your_email@qq.com',
+       'sender_password': 'your_smtp_password',
+       'receiver_email': 'receiver@example.com'
+   }
+
+   # Telegram 配置（可选）
+   TELEGRAM_CONFIG = {
+       'bot_token': 'your_bot_token_here',
+       'chat_id': 'your_chat_id_here'
+   }
+
+   # 通知方式配置
+   NOTIFY_CONFIG = {
+       'email': True,    # 是否启用邮件通知
+       'telegram': False # 是否启用 Telegram 通知
+   }
+   ```
+
+### 3. 邮箱配置（QQ邮箱）
+1. 登录 QQ 邮箱网页版
+2. 点击「设置」->「账户」
+3. 找到「POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务」
+4. 开启「POP3/SMTP服务」
+5. 按照提示发送短信获取授权码
+6. 将获取到的授权码填入配置文件的 `sender_password`
+7. 注意事项：
+   - 发件人邮箱必须是 QQ 邮箱
+   - 授权码不是 QQ 密码
+   - 如遇到发送失败，检查授权码是否正确
+
+### 4. Telegram 机器人配置（可选）
+1. 在 Telegram 中找到 @BotFather，创建新机器人获取 `bot_token`
+2. 找到 @userinfobot 获取你的 `chat_id`
+3. 将获取的信息填入配置文件
+
+### 5. Linux 服务器部署
+1. 创建日志目录：
+```bash
+mkdir -p log
+```
+
+2. 设置权限：
+```bash
+chmod +x auto_checkin.py
+```
+
+3. 测试运行：
+```bash
+./auto_checkin.py
+```
+
+4. 配置定时任务：
+```bash
+# 编辑 crontab
+crontab -e
+
+# 添加定时任务（每天早上 8 点执行）
+0 8 * * * cd /path/to/GlaDOS-Checkin && source venv/bin/activate && python3 auto_checkin.py
+
+# 查看定时任务
+crontab -l
+```
+
+5. 查看日志：
+```bash
+tail -f log/checkin.log
+```
+
+### 6. Windows 计划任务配置
 1. 打开任务计划程序
 2. 创建基本任务
-3. 设置每天 00:01 运行
-4. 操作选择运行 Python 脚本
-5. 填写脚本完整路径
+3. 设置每天运行的时间
+4. 选择启动程序
+5. 设置程序路径为 python.exe，参数为脚本的完整路径
 
-### Linux 系统
-
-1. 上传文件到服务器：
-```bash
-mkdir -p /root/glados-checkin
-# 使用 SFTP 等工具上传文件
+## 目录结构
+```
+GlaDOS-Checkin/
+├── auto_checkin.py    # 主程序
+├── config.example.py  # 配置文件模板
+├── email_sender.py    # 邮件发送模块
+├── telegram_sender.py # Telegram通知模块
+├── requirements.txt   # 依赖包列表
+└── log/              # 日志目录
+    └── checkin.log   # 日志文件
 ```
 
-2. 安装依赖：
-```bash
-cd /root/glados-checkin
-pip3 install -r requirements.txt
-```
+## 依赖说明
+- Python 3.6+
+- requests
+- zstandard
+- python-telegram-bot（可选，用于 Telegram 通知）
 
-3. 创建日志目录：
-```bash
-mkdir -p /root/glados-checkin/log
-chmod 755 /root/glados-checkin/log
-```
+## 常见问题
+1. 邮件发送失败
+   - 检查 QQ 邮箱是否开启 SMTP 服务
+   - 确认授权码是否正确
+   - 查看日志文件获取详细错误信息
 
-4. 添加定时任务：
-```bash
-crontab -e
-# 添加以下内容：
-1 0 * * * cd /root/glados-checkin && /usr/bin/python3 auto_checkin.py >> /root/glados-checkin/log/cron.log 2>&1
-```
+2. 签到失败
+   - 检查 cookie 是否过期
+   - 确认网络连接是否正常
+   - 查看日志文件排查具体原因
 
-## 配置说明
-
-### 邮箱配置
-
-1. 使用 QQ 邮箱
-2. 开启 SMTP 服务
-3. 获取授权码
-4. 在 config.py 中配置：
-```python
-EMAIL_CONFIG = {
-    'sender_email': 'your_qq_email@qq.com',
-    'sender_password': 'your_smtp_auth_code',
-    'receiver_email': 'receiver@example.com'
-}
-```
-
-### GLaDOS Headers 获取
-
-1. 登录 GLaDOS 网站
-2. 打开开发者工具（F12）
-3. 复制任意请求中的 headers
-4. 填入 config.py
-
-## 日志说明
-
-- 日志位置：`log/checkin.log`
-- 记录内容：签到状态、积分变化、剩余天数等
-- 格式：时间 + 日志级别 + 信息
-
-## 注意事项
-
-1. 请勿泄露你的 headers 信息
-2. 建议先本地测试成功后再部署到服务器
-3. 遇到问题先查看日志文件
-4. 确保服务器时区正确设置
+3. Linux 定时任务不执行
+   - 检查 crontab 语法是否正确
+   - 确认 Python 虚拟环境路径
+   - 查看系统日志 `journalctl -u cron`
 
 ## 许可证
+本项目采用 Apache License 2.0 开源许可证。
 
-Apache License 2.0
+## 贡献
+欢迎提交 Issue 和 Pull Request！
+
+## 免责声明
+本项目仅供学习交流使用，请遵守相关服务条款。

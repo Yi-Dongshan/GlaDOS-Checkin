@@ -18,7 +18,7 @@
 #### Windows
 ```bash
 # 克隆仓库
-git clone https://github.com/Yi-Dongshan/GlaDOS-Checkin.git
+git clone https://github.com/Yi-Dongshan/glados-checkin.git
 
 # 安装依赖
 pip install -r requirements.txt
@@ -31,10 +31,10 @@ apt update
 apt install -y python3 python3-pip git
 
 # 克隆仓库
-git clone https://github.com/Yi-Dongshan/GlaDOS-Checkin.git
+git clone https://github.com/Yi-Dongshan/glados-checkin.git
 
 # 创建 Python 虚拟环境
-cd GlaDOS-Checkin
+cd glados-checkin
 python3 -m venv venv
 source venv/bin/activate
 
@@ -114,7 +114,7 @@ chmod +x auto_checkin.py
 crontab -e
 
 # 添加定时任务（每天早上 8 点执行）
-0 8 * * * cd /path/to/GlaDOS-Checkin && source venv/bin/activate && python3 auto_checkin.py
+0 8 * * * cd /path/to/glados-checkin && source venv/bin/activate && python3 auto_checkin.py
 
 # 查看定时任务
 crontab -l
@@ -134,7 +134,7 @@ tail -f log/checkin.log
 
 ## 目录结构
 ```
-GlaDOS-Checkin/
+glados-checkin/
 ├── auto_checkin.py    # 主程序
 ├── config.example.py  # 配置文件模板
 ├── email_sender.py    # 邮件发送模块

@@ -1,46 +1,111 @@
 
-<div align="center">
-
 # GLaDOS 自动签到⚡
 
-_✨ 基于 [Python](https://www.python.org/) 实现的[GLaDOS](https://github.com/glados-network/GLaDOS)签到程序 ✨_  
+_✨ 基于 Python 实现的 GLaDOS 自动签到程序 ✨_
 
-</div>
+## 功能特点
 
-<p align="center">
-  <a href="https://github.com/hennessey-v/GlaDOS_Checkin_ql/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/hennessey-v/GlaDOS_Checkin_ql?color=%23ed793a" alt="license">
-  </a>
-  <a href="https://www.python.org/">
-    <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python">
-  </a>
-</p>
+- 自动执行每日签到
+- 邮件通知签到结果
+- 详细的日志记录
+- 支持 Windows 计划任务和 Linux Cron 定时执行
 
-## 简单介绍一下GLaDOS
+## 环境要求
 
->[GLaDOS](https://github.com/glados-network/GLaDOS)是一家高速稳定的V2Ray/Trojan机场，超过4年的老品牌，官方网站使用自主开发的管理系统，属于技术派的老站，支持WireGuard协议加速，而且流量套餐性价比非常高。
+- Python 3.8+
+- 依赖包：见 requirements.txt
 
+## 快速开始
 
+1. 克隆仓库：
+```bash
+git clone https://github.com/your-username/GlaDOS-Checkin.git
+cd GlaDOS-Checkin
+```
 
-## 准备工作
-- 获取headers
+2. 安装依赖：
+```bash
+pip install -r requirements.txt
+```
 
-## 部署
-**任务计划程序**（仅限Windows系统）
+3. 配置文件：
+   - 复制 `config.example.py` 为 `config.py`
+   - 在 `config.py` 中填入你的 GLaDOS 账号 headers 信息
+   - 配置邮箱信息（推荐使用 QQ 邮箱）
 
-1. 点击“创建任务”
-2. 配置[常规设置](./img/common.png)
-3. 设置[触发器设置](./img/trigger.png)
-4. 配置[任务操作](./img/action.png)
-5. 设置[任务条件](./img/condition.png)
-6. 设置[任务设置](./img/setting.png)
-7. 保存任务
-8. 测试任务:手动启动任务或等待触发条件满足，以测试任务是否按预期工作。
-9. [运行样例](./img/notification.png)
+## 部署说明
+
+### Windows 系统
+
+1. 打开任务计划程序
+2. 创建基本任务
+3. 设置每天 00:01 运行
+4. 操作选择运行 Python 脚本
+5. 填写脚本完整路径
+
+### Linux 系统
+
+1. 上传文件到服务器：
+```bash
+mkdir -p /root/glados-checkin
+# 使用 SFTP 等工具上传文件
+```
+
+2. 安装依赖：
+```bash
+cd /root/glados-checkin
+pip3 install -r requirements.txt
+```
+
+3. 创建日志目录：
+```bash
+mkdir -p /root/glados-checkin/log
+chmod 755 /root/glados-checkin/log
+```
+
+4. 添加定时任务：
+```bash
+crontab -e
+# 添加以下内容：
+1 0 * * * cd /root/glados-checkin && /usr/bin/python3 auto_checkin.py >> /root/glados-checkin/log/cron.log 2>&1
+```
+
+## 配置说明
+
+### 邮箱配置
+
+1. 使用 QQ 邮箱
+2. 开启 SMTP 服务
+3. 获取授权码
+4. 在 config.py 中配置：
+```python
+EMAIL_CONFIG = {
+    'sender_email': 'your_qq_email@qq.com',
+    'sender_password': 'your_smtp_auth_code',
+    'receiver_email': 'receiver@example.com'
+}
+```
+
+### GLaDOS Headers 获取
+
+1. 登录 GLaDOS 网站
+2. 打开开发者工具（F12）
+3. 复制任意请求中的 headers
+4. 填入 config.py
+
+## 日志说明
+
+- 日志位置：`log/checkin.log`
+- 记录内容：签到状态、积分变化、剩余天数等
+- 格式：时间 + 日志级别 + 信息
 
 ## 注意事项
-- 确保Python脚本文件路径正确无误。
-- 根据需要调整任务的触发器和操作设置，以满足自动化需求。
 
-## 鸣谢
-- 部分程序代码来源于开源项目[GlaDOS_Checkin_ql](https://github.com/hennessey-v/GlaDOS_Checkin_ql)
+1. 请勿泄露你的 headers 信息
+2. 建议先本地测试成功后再部署到服务器
+3. 遇到问题先查看日志文件
+4. 确保服务器时区正确设置
+
+## 许可证
+
+Apache License 2.0

@@ -34,4 +34,4 @@ ENV/
 # IDE
 .idea/
 .vscode/
-*.swp
+*.swpc

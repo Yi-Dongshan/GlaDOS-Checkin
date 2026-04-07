@@ -1,14 +1,19 @@
-# 修复导入错误：jsonp -> json
+import os
 import io
-import json  # 这里改正了 jsonp 为 json
+import json
 import time
 import requests
 import logging
 from datetime import timedelta, date
-from config import headers, EMAIL_CONFIG, TELEGRAM_CONFIG, NOTIFY_CONFIG
+from config import ACCOUNTS, EMAIL_CONFIG, TELEGRAM_CONFIG, NOTIFY_CONFIG
 import zstandard as zstd
 from email_sender import send_email
 from telegram_sender import send_telegram
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+if not os.path.exists('log'):
+    os.makedirs('log')
 
 # 保持原有的日志配置
 logging.basicConfig(
@@ -103,50 +108,62 @@ def calculate_expiration_date(remaining_days):
 
 if __name__ == '__main__':
     try:
-        start_time = time.time()
-        res = checkin(headers)
-        
-        checkin_result = res['message']
-        points_balance = res['list'][0]['balance'].split('.')[0]
-        change = res['list'][0]['change'].split('.')[0]
-        
-        leftdays = get_leftdays(headers)
-        time_taken = time.time() - start_time
-        exp_date = calculate_expiration_date(int(leftdays))
-        
-        msg = (
-            f"📬 GLaDOS 签到结果\n"
-            f"✅ 状态：{checkin_result}\n"
-            f"🕐 用时：{time_taken:.2f}s\n"
-            f"🧧 积分余额：{points_balance}(+{change})\n"
-            f"⏳ 剩余会员：{leftdays} 天（到期时间：{exp_date}）"
-        )
-        
-        # 发送通知
-        if NOTIFY_CONFIG.get('email', True):
-            if send_email(
-                subject="GLaDOS 每日签到通知",
-                content=msg,
-                sender_email=EMAIL_CONFIG['sender_email'],
-                sender_password=EMAIL_CONFIG['sender_password'],
-                receiver_email=EMAIL_CONFIG['receiver_email']
-            ):
-                logging.info("邮件发送成功")
-            else:
-                logging.error("邮件发送失败")
-        
-        if NOTIFY_CONFIG.get('telegram', False):
-            if send_telegram(
-                bot_token=TELEGRAM_CONFIG['bot_token'],
-                chat_id=TELEGRAM_CONFIG['chat_id'],
-                message=msg
-            ):
-                logging.info("Telegram 通知发送成功")
-            else:
-                logging.error("Telegram 通知发送失败")
+
+        all_messages = [] # 用于汇总所有账号的运行结果
+        summary_status = "成功"
+
+        logging.info(f"开始执行多账号签到任务，共 {len(ACCOUNTS)} 个账号")
+
+        for idx, account in enumerate(ACCOUNTS):
+            acc_name = account.get('name', f"账号 {idx+1}")
+            acc_headers = account.get('headers')
             
-        logging.info(msg)
+            logging.info(f"--- 正在处理账号: {acc_name} ---")
+            
+            try:
+                start_time = time.time()
+                res = checkin(acc_headers)
+                
+                checkin_result = res.get('message', '未知错误')
+                # 兼容 balance 可能不存在的情况
+                points_balance = res['list'][0]['balance'].split('.')[0] if 'list' in res else "N/A"
+                change = res['list'][0]['change'].split('.')[0] if 'list' in res else "0"
+                
+                leftdays = get_leftdays(acc_headers)
+                time_taken = time.time() - start_time
+                exp_date = calculate_expiration_date(int(leftdays)) if leftdays is not None else "未知"
+                
+                msg = (
+                    f"👤 账号：{acc_name}\n"
+                    f"✅ 状态：{checkin_result}\n"
+                    f"⏳ 剩余：{leftdays} 天 ({exp_date})\n"
+                    f"🧧 积分：{points_balance} (+{change})\n"
+                )
+                all_messages.append(msg)
+                logging.info(f"{acc_name} 签到完成")
+
+            except Exception as e:
+                error_msg = f"❌ 账号 {acc_name} 执行出错：{str(e)}"
+                all_messages.append(error_msg)
+                logging.error(error_msg)
+                summary_status = "部分失败"
+
+            # 账号之间稍微停顿一下，防止请求过快被封 IP
+            time.sleep(2)
+
+        # 汇总所有账号的消息内容
+        final_full_msg = f"📅 GLaDOS 每日签到汇总报告\n{'='*25}\n" + "\n".join(all_messages)
         
+        # --- 发送汇总通知 ---
+        if NOTIFY_CONFIG.get('email', True):
+            subject = f"GLaDOS 签到通知 - {summary_status}"
+            send_email(subject, final_full_msg, EMAIL_CONFIG['sender_email'], EMAIL_CONFIG['sender_password'], EMAIL_CONFIG['receiver_email'])
+        
+        if NOTIFY_CONFIG.get('telegram', True):
+            send_telegram(TELEGRAM_CONFIG['bot_token'], TELEGRAM_CONFIG['chat_id'], final_full_msg)
+
+        logging.info("所有任务执行完毕")
+
     except Exception as e:
         error_msg = f"签到程序执行出错：{str(e)}"
         logging.error(error_msg)
@@ -161,7 +178,7 @@ if __name__ == '__main__':
                 receiver_email=EMAIL_CONFIG['receiver_email']
             )
         
-        if NOTIFY_CONFIG.get('telegram', False):
+        if NOTIFY_CONFIG.get('telegram', True):
             send_telegram(
                 bot_token=TELEGRAM_CONFIG['bot_token'],
                 chat_id=TELEGRAM_CONFIG['chat_id'],

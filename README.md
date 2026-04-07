@@ -1,138 +1,129 @@
 
 # GLaDOS 自动签到工具
 
-一个基于 Python 实现的 GLaDOS 自动签到工具，支持邮件和 Telegram 通知。
+一个基于 Python 的 GLaDOS 自动签到脚本，支持邮件与 Telegram 通知，适合本地、服务器或 GitHub Actions 自动化运行。
 
-## 功能特性
+---
 
-- ✨ 自动执行每日签到
-- 📧 支持邮件通知
-- 🤖 支持 Telegram 机器人通知
-- 📝 详细的日志记录
-- ⏰ 支持 Windows 计划任务和 Linux Cron 定时执行
+## 快速开始（推荐：GitHub Actions）
 
-## 使用方法
+1. Fork 或 Clone 本仓库。
+2. 在仓库 Settings → Secrets → Actions 添加所需 Secrets（参见下方“GitHub Actions 部署”）。
+3. 在仓库根目录添加工作流文件 `.github/workflows/daily_checkin.yml`（示例见下方），保存并在 Actions 页面手动触发一次以验证。
 
-### 1. 环境准备
 
-#### Windows
+---
+
+## 先决条件
+
+- Python 3.6+
+- 依赖见 `requirements.txt`（本项目主要依赖 `requests`、`zstandard`，可选 `python-telegram-bot` 用于 Telegram）
+
+安装（示例）：
+
 ```bash
-# 克隆仓库
-git clone https://github.com/Yi-Dongshan/GlaDOS-Checkin.git
-
-# 安装依赖
 pip install -r requirements.txt
 ```
 
-#### Linux
+---
+
+## 配置说明
+
+1. 复制模板：将 `config.example.py` 复制为 `config.py`，并填写信息；或者在 CI 中用 Secrets 动态生成 `config.py`（推荐）。
+
+2. `config.example.py` 中主要变量：
+
+```python
+headers = {
+    'cookie': 'your_cookie',
+    'user-agent': 'your_user_agent'
+}
+
+EMAIL_CONFIG = {
+    'sender_email': 'your_email@qq.com',
+    'sender_password': 'your_smtp_password',
+    'receiver_email': 'receiver@example.com'
+}
+
+TELEGRAM_CONFIG = {
+    'bot_token': 'your_bot_token',
+    'chat_id': 'your_chat_id'
+}
+
+NOTIFY_CONFIG = {
+    'email': True,
+    'telegram': False
+}
+```
+
+安全建议：请不要将含有真实 Cookie、邮箱授权码等敏感信息直接提交到仓库，使用 GitHub Secrets 或其他加密方式替代。
+
+---
+
+## 本地运行（Windows / Linux）
+
+Windows：
+
+```powershell
+git clone <repo>
+cd GLaDOS-Checkin
+pip install -r requirements.txt
+# 将 config.example.py 复制为 config.py 并填入信息
+python auto_checkin.py
+```
+
+Linux（建议在虚拟环境中运行）：
+
 ```bash
-# 安装 Python3 和 pip
-apt update
-apt install -y python3 python3-pip git
-
-# 克隆仓库
-git clone https://github.com/Yi-Dongshan/GlaDOS-Checkin.git
-
-# 创建 Python 虚拟环境
-cd GlaDOS-Checkin
+git clone <repo>
+cd GLaDOS-Checkin
 python3 -m venv venv
 source venv/bin/activate
-
-# 安装依赖
 pip install -r requirements.txt
+cp config.example.py config.py
+vim config.py  # 编辑
+python3 auto_checkin.py
 ```
 
-### 2. 配置文件
-1. 复制配置文件模板：
-   - 将 `config.example.py` 复制为 `config.py`
-   - 修改配置文件中的相关信息
+---
 
-2. 配置说明：
-   ```python
-   # GLaDOS Headers配置
-   headers = {
-       "cookie": "your_cookie_here",
-       "user-agent": "your_user_agent_here",
-   }
+## 服务器/定时任务
 
-   # 邮箱配置（使用QQ邮箱）
-   EMAIL_CONFIG = {
-       'sender_email': 'your_email@qq.com',
-       'sender_password': 'your_smtp_password',
-       'receiver_email': 'receiver@example.com'
-   }
+- Linux (cron)：
 
-   # Telegram 配置（可选）
-   TELEGRAM_CONFIG = {
-       'bot_token': 'your_bot_token_here',
-       'chat_id': 'your_chat_id_here'
-   }
-
-   # 通知方式配置
-   NOTIFY_CONFIG = {
-       'email': True,    # 是否启用邮件通知
-       'telegram': False # 是否启用 Telegram 通知
-   }
-   ```
-
-### 3. 邮箱配置（QQ邮箱）
-1. 登录 QQ 邮箱网页版
-2. 点击「设置」->「账户」
-3. 找到「POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务」
-4. 开启「POP3/SMTP服务」
-5. 按照提示发送短信获取授权码
-6. 将获取到的授权码填入配置文件的 `sender_password`
-7. 注意事项：
-   - 发件人邮箱必须是 QQ 邮箱
-   - 授权码不是 QQ 密码
-   - 如遇到发送失败，检查授权码是否正确
-
-### 4. Telegram 机器人配置（可选）
-1. 在 Telegram 中找到 @BotFather，创建新机器人获取 `bot_token`
-2. 找到 @userinfobot 获取你的 `chat_id`
-3. 将获取的信息填入配置文件
-
-### 5. Linux 服务器部署
-1. 创建日志目录：
 ```bash
 mkdir -p log
+# 每天 08:00 运行（示例）
+0 8 * * * cd /path/to/GlaDOS-Checkin && source /path/to/venv/bin/activate && python3 auto_checkin.py
 ```
 
-2. 设置权限：
+- Windows：使用任务计划程序创建每日任务，执行 `python C:\path\to\GlaDOS-Checkin\auto_checkin.py`。
+
+查看日志：
+
 ```bash
-chmod +x auto_checkin.py
+tail -n 200 log/checkin.log
 ```
 
-3. 测试运行：
-```bash
-./auto_checkin.py
-```
+---
 
-4. 配置定时任务：
-```bash
-# 编辑 crontab
-crontab -e
+## GitHub Actions 部署（细节）
 
-# 添加定时任务（每天早上 8 点执行）
-0 8 * * * cd /path/to/GlaDOS-Checkin && source venv/bin/activate && python3 auto_checkin.py
+推荐将敏感信息拆成多个 Secrets（例如 `HEADERS_JSON`、`EMAIL_SENDER` 等），而不是把整个 `config.py` 内容作为单个 Secret，这样更易维护与旋转凭据。
 
-# 查看定时任务
-crontab -l
-```
+需添加的 Secrets（示例）：
 
-5. 查看日志：
-```bash
-tail -f log/checkin.log
-```
+- `HEADERS_JSON`：headers 的 JSON 字符串（含 cookie 等）
+- `EMAIL_SENDER`、`EMAIL_PASSWORD`、`EMAIL_RECEIVER`
+- `TELEGRAM_BOT_TOKEN`、`TELEGRAM_CHAT_ID`
+- `NOTIFY_EMAIL`、`NOTIFY_TELEGRAM`（可选，true/false）
 
-### 6. Windows 计划任务配置
-1. 打开任务计划程序
-2. 创建基本任务
-3. 设置每天运行的时间
-4. 选择启动程序
-5. 设置程序路径为 python.exe，参数为脚本的完整路径
+在 workflow 中使用这些 Secrets 动态生成 `config.py`（参见上方示例）。
+
+---
 
 ## 目录结构
+
 ```
 GlaDOS-Checkin/
 ├── auto_checkin.py    # 主程序
@@ -140,37 +131,36 @@ GlaDOS-Checkin/
 ├── email_sender.py    # 邮件发送模块
 ├── telegram_sender.py # Telegram通知模块
 ├── requirements.txt   # 依赖包列表
-└── log/              # 日志目录
-    └── checkin.log   # 日志文件
+└── log/               # 日志目录
+    └── checkin.log    # 日志文件
 ```
 
-## 依赖说明
-- Python 3.6+
-- requests
-- zstandard
-- python-telegram-bot（可选，用于 Telegram 通知）
+---
 
-## 常见问题
-1. 邮件发送失败
-   - 检查 QQ 邮箱是否开启 SMTP 服务
-   - 确认授权码是否正确
-   - 查看日志文件获取详细错误信息
+## 常见问题 (FAQ)
 
-2. 签到失败
-   - 检查 cookie 是否过期
-   - 确认网络连接是否正常
-   - 查看日志文件排查具体原因
+Q: 为什么 GitHub Actions 报错 `ImportError: cannot import name 'headers'`？
 
-3. Linux 定时任务不执行
-   - 检查 crontab 语法是否正确
-   - 确认 Python 虚拟环境路径
-   - 查看系统日志 `journalctl -u cron`
+A: 请检查 workflow 中生成的 `config.py` 是否包含 `headers`、`EMAIL_CONFIG` 等变量，且 Secrets 名称与 workflow 中引用一致。
+
+Q: 邮件发送失败怎么办？
+
+A: 对于 QQ 邮箱，请使用 SMTP 授权码（不是登录密码），并确认已开启 POP3/SMTP 服务。
+
+Q: Actions 停止触发怎么办？
+
+A: 如果仓库长时间无活动，GitHub 可能暂停 workflow。前往 Actions 页面重新启用或在仓库做一次提交/手动触发。
+
+---
 
 ## 许可证
-本项目采用 Apache License 2.0 开源许可证。
 
-## 贡献
-欢迎提交 Issue 和 Pull Request！
+本项目采用 [Apache License 2.0](LICENSE) 开源许可证。
+
+---
 
 ## 免责声明
-本项目仅供学习交流使用，请遵守相关服务条款。
+
+本项目仅供学习交流使用。请勿用于非法用途，作者不对因使用本脚本造成的任何账号封禁或损失负责。
+
+

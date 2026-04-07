@@ -29,6 +29,7 @@ var/
 
 # 虚拟环境
 venv/
+.venv/
 ENV/
 
 # IDE

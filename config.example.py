@@ -1,13 +1,38 @@
-# GLaDOS Headers配置
-headers = {
-    "cookie": "your_cookie_here",
-    "user-agent": "your_user_agent_here",
-    # 其他必要的headers...
-}
+# GLaDOS 多账号配置
+ACCOUNTS = [
+    {
+        "name": "账号1",
+        "headers": {
+            "cookie": "your_cookie_here_1",
+            "user-agent": "Mozilla/5.0...",
+            # ... 其他必要的 headers
+        }
+    },
+    {
+        "name": "账号2",
+        "headers": {
+            "cookie": "your_cookie_here_2",
+            "user-agent": "Mozilla/5.0...",
+            # ... 其他必要的 headers
+        }
+    }
+]
 
 # 邮箱配置
 EMAIL_CONFIG = {
-    'sender_email': 'your_email@qq.com',  # 发件人邮箱
-    'sender_password': 'your_smtp_password',  # SMTP 授权码
-    'receiver_email': 'receiver@example.com'  # 收件人邮箱
+    'sender_email': 'your_email@qq.com',
+    'sender_password': 'your_smtp_password',
+    'receiver_email': 'receiver@example.com'
+}
+
+# Telegram 配置
+TELEGRAM_CONFIG = {
+    'bot_token': 'your_bot_token_here',  # 从 @BotFather 获取
+    'chat_id': 'your_chat_id_here'       # 可以从 @userinfobot 获取
+}
+
+# 通知方式配置
+NOTIFY_CONFIG = {
+    'email': True,    # 是否启用邮件通知
+    'telegram': False  # 是否启用 Telegram 通知
 }

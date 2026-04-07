@@ -1,25 +1,42 @@
-
 # GLaDOS 自动签到工具
 
 一个基于 Python 的 GLaDOS 自动签到脚本，支持邮件与 Telegram 通知，适合本地、服务器或 GitHub Actions 自动化运行。
 
----
-
-## 快速开始（推荐：GitHub Actions）
-
-1. Fork 或 Clone 本仓库。
-2. 在仓库 Settings → Secrets → Actions 添加所需 Secrets（参见下方“GitHub Actions 部署”）。
-3. 在仓库根目录添加工作流文件 `.github/workflows/daily_checkin.yml`（示例见下方），保存并在 Actions 页面手动触发一次以验证。
-
+**[快速开始](#快速开始) | [配置说明](#配置说明) | [常见问题](#常见问题)**
 
 ---
 
-## 先决条件
+## 快速开始
 
-- Python 3.6+
-- 依赖见 `requirements.txt`（本项目主要依赖 `requests`、`zstandard`，可选 `python-telegram-bot` 用于 Telegram）
+### ✨ 推荐方式：GitHub Actions（无需配置服务器）
 
-安装（示例）：
+1. Fork 本仓库
+2. 前往**仓库（而不是GitHub账号）的Settings** → Secrets and variables → Actions**，添加 Repository secret 并命名为 CONFIG_PY , 将你的 config.py 配置信息复制到Secrets中
+3. 启用 Actions，脚本将每日自动运行
+
+---
+
+## 配置说明
+
+**本地/服务器：**将 `config.example.py` 复制为 `config.py`，并填写信息；
+**GitHub Actions：**用 Secrets 动态生成 `config.py`（推荐）
+
+**安全建议：**请不要将含有真实 Cookie、邮箱授权码等敏感信息直接提交到仓库，使用 GitHub Secrets 或其他加密方式替代。
+
+---
+
+## 环境依赖
+
+- **Python 3.6+**
+- 依赖包：
+
+| 包名 | 用途 |
+|------|------|
+| `requests` | HTTP 请求 |
+| `zstandard` | 数据压缩 |
+| `python-telegram-bot` | Telegram 通知（可选） |
+
+安装依赖：
 
 ```bash
 pip install -r requirements.txt
@@ -27,42 +44,9 @@ pip install -r requirements.txt
 
 ---
 
-## 配置说明
-
-1. 复制模板：将 `config.example.py` 复制为 `config.py`，并填写信息；或者在 CI 中用 Secrets 动态生成 `config.py`（推荐）。
-
-2. `config.example.py` 中主要变量：
-
-```python
-headers = {
-    'cookie': 'your_cookie',
-    'user-agent': 'your_user_agent'
-}
-
-EMAIL_CONFIG = {
-    'sender_email': 'your_email@qq.com',
-    'sender_password': 'your_smtp_password',
-    'receiver_email': 'receiver@example.com'
-}
-
-TELEGRAM_CONFIG = {
-    'bot_token': 'your_bot_token',
-    'chat_id': 'your_chat_id'
-}
-
-NOTIFY_CONFIG = {
-    'email': True,
-    'telegram': False
-}
-```
-
-安全建议：请不要将含有真实 Cookie、邮箱授权码等敏感信息直接提交到仓库，使用 GitHub Secrets 或其他加密方式替代。
-
----
-
 ## 本地运行（Windows / Linux）
 
-Windows：
+**Windows：**
 
 ```powershell
 git clone <repo>
@@ -72,7 +56,7 @@ pip install -r requirements.txt
 python auto_checkin.py
 ```
 
-Linux（建议在虚拟环境中运行）：
+**Linux：**
 
 ```bash
 git clone <repo>
@@ -81,13 +65,13 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 cp config.example.py config.py
-vim config.py  # 编辑
+nano config.py  # 编辑
 python3 auto_checkin.py
 ```
 
 ---
 
-## 服务器/定时任务
+## 定时任务
 
 - Linux (cron)：
 
@@ -99,57 +83,43 @@ mkdir -p log
 
 - Windows：使用任务计划程序创建每日任务，执行 `python C:\path\to\GlaDOS-Checkin\auto_checkin.py`。
 
-查看日志：
-
-```bash
-tail -n 200 log/checkin.log
-```
-
----
-
-## GitHub Actions 部署（细节）
-
-推荐将敏感信息拆成多个 Secrets（例如 `HEADERS_JSON`、`EMAIL_SENDER` 等），而不是把整个 `config.py` 内容作为单个 Secret，这样更易维护与旋转凭据。
-
-需添加的 Secrets（示例）：
-
-- `HEADERS_JSON`：headers 的 JSON 字符串（含 cookie 等）
-- `EMAIL_SENDER`、`EMAIL_PASSWORD`、`EMAIL_RECEIVER`
-- `TELEGRAM_BOT_TOKEN`、`TELEGRAM_CHAT_ID`
-- `NOTIFY_EMAIL`、`NOTIFY_TELEGRAM`（可选，true/false）
-
-在 workflow 中使用这些 Secrets 动态生成 `config.py`（参见上方示例）。
 
 ---
 
 ## 目录结构
 
 ```
-GlaDOS-Checkin/
-├── auto_checkin.py    # 主程序
-├── config.example.py  # 配置文件模板
-├── email_sender.py    # 邮件发送模块
-├── telegram_sender.py # Telegram通知模块
-├── requirements.txt   # 依赖包列表
-└── log/               # 日志目录
-    └── checkin.log    # 日志文件
+GLaDOS-Checkin/
+├── auto_checkin.py       # 主程序
+├── config.example.py     # 配置模板
+├── config.py             # 配置文件（本地）
+├── email_sender.py       # 邮件发送模块
+├── telegram_sender.py    # Telegram 通知模块
+├── requirements.txt      # 依赖包列表
+├── .gitignore            # Git 忽略列表
+├── log/
+│   └── checkin.log       # 日志文件
+└── .github/workflows/
+    └── checkin.yml       # GitHub Actions 工作流
 ```
 
 ---
 
-## 常见问题 (FAQ)
+## 常见问题
 
-Q: 为什么 GitHub Actions 报错 `ImportError: cannot import name 'headers'`？
+### Q1: 邮件发送失败怎么办？
 
-A: 请检查 workflow 中生成的 `config.py` 是否包含 `headers`、`EMAIL_CONFIG` 等变量，且 Secrets 名称与 workflow 中引用一致。
+**A:** 对于 QQ 邮箱，请使用 SMTP 授权码（不是登录密码），并确认已开启 POP3/SMTP 服务。
 
-Q: 邮件发送失败怎么办？
+### Q2: 如何获取 GLaDOS Cookie？
 
-A: 对于 QQ 邮箱，请使用 SMTP 授权码（不是登录密码），并确认已开启 POP3/SMTP 服务。
+**A:** 打开 GLaDOS 网站 → F12 → Network → 复制请求头的 Cookie 
 
-Q: Actions 停止触发怎么办？
+### Q3: GitHub Actions 停止运行？
 
-A: 如果仓库长时间无活动，GitHub 可能暂停 workflow。前往 Actions 页面重新启用或在仓库做一次提交/手动触发。
+**A:** GitHub 可能在仓库 2 个月无活动时暂停 workflow：
+- 前往 **Actions** 页面重新启用一次 workflow
+- 或在仓库提交一次代码触发自动运行
 
 ---
 
@@ -162,5 +132,3 @@ A: 如果仓库长时间无活动，GitHub 可能暂停 workflow。前往 Action
 ## 免责声明
 
 本项目仅供学习交流使用。请勿用于非法用途，作者不对因使用本脚本造成的任何账号封禁或损失负责。
-
-

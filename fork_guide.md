@@ -14,7 +14,7 @@ git clone https://github.com/原作者/原仓库名.git
 git remote remove origin
 
 # 添加你的仓库作为新的 origin
-git remote add origin git@github.com:Yi-Dongshan/GlaDOS-Checkin.git
+git remote add origin git@github.com:Yi-Dongshan/glados-checkin.git
 ```
 
 ### 3. 代码修改和提交

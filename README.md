@@ -18,10 +18,10 @@
 
 ## 配置说明
 
-**本地/服务器：**将 `config.example.py` 复制为 `config.py`，并填写信息；
-**GitHub Actions：**用 Secrets 动态生成 `config.py`（推荐）
-
-**安全建议：**请不要将含有真实 Cookie、邮箱授权码等敏感信息直接提交到仓库，使用 GitHub Secrets 或其他加密方式替代。
+- 配置信息主要包含： **cookie（必需）**, 邮箱（可选）和Telegram(可选)
+- **若部署于 GitHub Actions**：用 Secrets 动态生成 `config.py`（推荐）
+- **若部署于本地/服务器**：将 `config.example.py` 复制为 `config.py`，并填写信息；
+- **安全建议**：请不要将含有真实 Cookie、邮箱授权码等敏感信息直接提交到仓库，使用 GitHub Secrets 或其他加密方式替代。
 
 ---
 

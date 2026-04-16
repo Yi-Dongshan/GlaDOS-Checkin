@@ -8,19 +8,20 @@
 
 ## 快速开始
 
-### ✨ 推荐方式：GitHub Actions（无需配置服务器）
+### ✨ 推荐方式：GitHub Actions
 
 1. Fork 本仓库
-2. 前往**仓库（而不是GitHub账号）的Settings** → Secrets and variables → Actions**，添加 Repository secret 并命名为 CONFIG_PY , 将你的 config.py 配置信息复制到Secrets中
-3. 启用 Actions，脚本将每日自动运行
+2. 准备好 `config.example.py` 中所需的配置信息, 包括 GLaDOS 网站 **cookie（必需）** , 邮箱授权码（可选）和Telegram(可选)
+3. 前往**仓库（而不是GitHub账号）的Settings → Secrets and variables → Actions**，添加 Repository secret 并命名为 CONFIG_PY , 将你的 config.py 配置信息复制到Secrets中
+4. 启用 Actions，脚本将每日自动运行
 
 ---
 
 ## 配置说明
 
 - 配置信息主要包含： **cookie（必需）**, 邮箱（可选）和Telegram(可选)
-- **若部署于 GitHub Actions**：用 Secrets 动态生成 `config.py`（推荐）
-- **若部署于本地/服务器**：将 `config.example.py` 复制为 `config.py`，并填写信息；
+- **若部署于本地/服务器**：将 `config.example.py` 复制为 `config.py`，并填写配置信息;
+- **若部署于 GitHub Actions**：前往**仓库（而不是GitHub账号）的Settings → Secrets and variables → Actions**，添加 Repository secret 并命名为 CONFIG_PY , 将你的 config.py 配置信息复制到Secrets中;
 - **安全建议**：请不要将含有真实 Cookie、邮箱授权码等敏感信息直接提交到仓库，使用 GitHub Secrets 或其他加密方式替代。
 
 ---
@@ -29,12 +30,6 @@
 
 - **Python 3.6+**
 - 依赖包：
-
-| 包名 | 用途 |
-|------|------|
-| `requests` | HTTP 请求 |
-| `zstandard` | 数据压缩 |
-| `python-telegram-bot` | Telegram 通知（可选） |
 
 安装依赖：
 
